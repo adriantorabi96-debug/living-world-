@@ -963,4 +963,65 @@ requestAnimationFrame(gameLoop);
 setInterval(save, 10000);
 </script>
 </body>
-</html>
+</html>/* اصلاح رابط کاربری موبایل Living World */
+#status {
+  direction: rtl !important;
+  text-align: right;
+  width: min(220px, calc(100vw - 130px));
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+#mission {
+  top: 190px;
+  left: 7px;
+  width: min(220px, calc(100vw - 16px));
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+#clock {
+  max-width: 105px;
+  font-size: 11px;
+}
+
+#book {
+  max-width: 155px;
+  font-size: 12px;
+}
+
+#hotbar {
+  max-width: calc(100vw - 16px);
+  gap: 3px;
+  padding: 3px;
+}
+
+.slot {
+  min-width: 0;
+  width: 39px;
+  height: 44px;
+  flex: 1;
+}
+
+@media (max-width: 390px) {
+  #status {
+    width: 190px;
+    font-size: 11px;
+  }
+
+  #mission {
+    top: 190px;
+    width: 190px;
+    font-size: 11px;
+  }
+
+  #actions {
+    right: 6px;
+    gap: 6px;
+  }
+
+  .action {
+    width: 52px;
+    height: 52px;
+  }
+}
