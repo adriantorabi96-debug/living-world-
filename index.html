@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Living World</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #3d7435;
+  font-family: Tahoma, Arial, sans-serif;
+  color: white;
+  touch-action: none;
+}
+
+canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+.panel {
+  position: fixed;
+  z-index: 2;
+  background: #17252aee;
+  border: 2px solid #71827a;
+  border-radius: 9px;
+  padding: 8px;
+  box-shadow: 0 3px 0 #0b1214;
+}
+
+#status {
+  top: 7px;
+  left: 7px;
+  width: 180px;
+  font-size: 11px;
+  direction: ltr;
+}
+
+.bar {
+  height: 12px;
+  background: #091114;
+  border: 1px solid #526466;
+  border-radius: 5px;
+  margin: 4px 0;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  width: 100%;
+}
+
+#hp {
+  background: #e8424e;
+}
+
+#mana {
+  background: #15bce9;
+}
+
+#mission {
+  top: 116px;
+  left: 7px;
+  width: 180px;
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+#clock {
+  top: 7px;
+  right: 7px;
+  text-align: center;
+  font-size: 12px;
+}
+
+button {
+  color: white;
+  background: #25383b;
+  border: 2px solid #71827a;
+  border-radius: 8px;
+  padding: 8px;
+  font-weight: bold;
+  touch-action: manipulation;
+}
+
+#book {
+  position: fixed;
+  z-index: 3;
+  top: 70px;
+  right: 7px;
+  background: #70401e;
+  border-color: #e9b64b;
+}
+
+#pad {
+  position: fixed;
+  z-index: 3;
+  left: 10px;
+  bottom: 85px;
+  width: 128px;
+  height: 128px;
+}
+
+.mv {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  font-size: 20px;
+  background: #172c35dd;
+}
+
+#up {
+  top: 0;
+  left: 43px;
+}
+
+#down {
+  bottom: 0;
+  left: 43px;
+}
+
+#left {
+  left: 0;
+  top: 43px;
+}
+
+#right {
+  right: 0;
+  top: 43px;
+}
+
+#actions {
+  position: fixed;
+  z-index: 3;
+  right: 9px;
+  bottom: 85px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.action {
+  width: 57px;
+  height: 57px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 22px;
+}
+
+#hotbar {
+  position: fixed;
+  z-index: 3;
+  bottom: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  background: #142126ee;
+  border: 2px solid #71827a;
+  border-radius: 9px;
+  padding: 4px;
+}
+
+.slot {
+  min-width: 42px;
+  height: 46px;
+  padding: 0;
+  font-size: 20px;
+}
+
+#hint {
+  position: fixed;
+  z-index: 2;
+  bottom: 62px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #101a1ccc;
+  border-radius: 6px;
+  padding: 5px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+#modal {
+  display: none;
+  position: fixed;
+  z-index: 8;
+  inset: 0;
+  background: #06100edb;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.sheet {
+  width: min(560px, 100%);
+  max-height: 88vh;
+  overflow: auto;
+  background: #17262b;
+  border: 3px solid #73877d;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.sheet h2 {
+  color: #ffd15a;
+  font-size: 19px;
+}
+
+.close {
+  float: left;
+  background: #713737;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.card {
+  background: #213338;
+  border: 1px solid #53686a;
+  border-radius: 8px;
+  padding: 7px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.card b {
+  display: block;
+  font-size: 25px;
+}
+
+.card small {
+  display: block;
+  color: #c3d0ca;
+  line-height: 1.7;
+}
+
+.card button {
+  width: 100%;
+  margin-top: 5px;
+  padding: 6px;
+}
+
+#toast {
+  display: none;
+  position: fixed;
+  z-index: 10;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #14272a;
+  border: 2px solid #ffd15a;
+  border-radius: 9px;
+  padding: 12px;
+}
+
+@media(max-width:390px) {
+  #status, #mission {
+    width: 155px;
+  }
+
+  .grid {
+    gap: 4px;
+  }
+
+  .card {
+    padding: 5px;
+  }
+
+  .slot {
+    min-width: 37px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="world"></canvas>
+
+<div id="status" class="panel">
+  <b>🧙 LIVING WORLD · سطح <span id="level">1</span></b>
+
+  <div>❤️ جان: <span id="hpText">100</span>/100</div>
+  <div class="bar"><div class="fill" id="hp"></div></div>
+
+  <div>💧 مانا: <span id="manaText">100</span>/100</div>
+  <div class="bar"><div class="fill" id="mana"></div></div>
+
+  <div>✨ تجربه: <span id="xp">0</span></div>
+</div>
+
+<div id="mission" class="panel">
+  <b style="color:#ffd15a">✦ مأموریت جنگل</b>
+  <br>جنگل جادویی را کشف کن
+  <br>🪵 چوب: <span id="wood">0</span>
+  <br>🪨 سنگ: <span id="stone">0</span>
+  <br>🌿 گیاه: <span id="herb">0</span>
+  <br>💎 کریستال: <span id="crystal">0</span>
+</div>
+
+<div id="clock" class="panel">
+  ☀️ روز <span id="day">1</span>
+  <br><span id="time">12:00</span>
+</div>
+
+<button id="book">📖 کتاب جادوها</button>
+
+<div id="pad">
+  <button class="mv" id="up">▲</button>
+  <button class="mv" id="down">▼</button>
+  <button class="mv" id="left">◀</button>
+  <button class="mv" id="right">▶</button>
+</div>
+
+<div id="actions">
+  <button class="action" id="cast">🪄</button>
+  <button class="action" id="gather">✋</button>
+  <button class="action" id="craft">⚒️</button>
+</div>
+
+<div id="hotbar">
+  <button class="slot" id="slotWand">🪄</button>
+  <button class="slot" id="slotBook">📕</button>
+  <button class="slot" id="slotPotion">🧪</button>
+  <button class="slot">🪵</button>
+  <button class="slot">🪨</button>
+  <button class="slot">🌿</button>
+  <button class="slot">💎</button>
+</div>
+
+<div id="hint">حرکت با فلش‌ها · ✋ جمع‌آوری · 🪄 اجرای جادو</div>
+
+<div id="modal">
+  <div class="sheet">
+    <button class="close" id="close">بستن ✕</button>
+    <div id="content"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const canvas = document.getElementById("world");
+const ctx = canvas.getContext("2d");
+
+let W, H, DPR;
+
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+  W = innerWidth;
+  H = innerHeight;
+
+  canvas.width = W * DPR;
+  canvas.height = H * DPR;
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
+
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+
+addEventListener("resize", resize);
+resize();
+
+const S = {
+  x: 0,
+  y: 0,
+  hp: 100,
+  mana: 100,
+  xp: 0,
+  level: 1,
+  wood: 0,
+  stone: 0,
+  herb: 0,
+  crystal: 0,
+  day: 1,
+  minutes: 720,
+  selected: 0,
+  unlocked: [true, true, true, false, false, false, false, false, false]
+};
+
+const inventory = {
+  wand: 0,
+  book: 0,
+  potion: 0,
+  healingPotion: 0,
+  axe: 0,
+  pickaxe: 0,
+  workbench: 0,
+  crystalOrb: 0,
+  armor: 0
+};
+
+const spells = [
+  ["توپ یخ", "🌀", 12, "پرتابه یخی", "#63e8ff", "bolt"],
+  ["توپ آتش", "🔥", 16, "گلوله آتشین", "#ff713b", "bolt"],
+  ["برق", "⚡", 20, "صاعقه سریع", "#78baff", "bolt"],
+  ["درمان", "💚", 22, "بازیابی جان", "#77ff70", "heal"],
+  ["تلپورت", "🟣", 25, "جهش به جلو", "#df75ff", "teleport"],
+  ["باد", "🌪️", 18, "موج باد", "#8ce9ff", "wind"],
+  ["زمین", "🪨", 24, "سپر سنگی", "#e5b96c", "shield"],
+  ["آب", "🌊", 18, "موج آب", "#47caff", "water"],
+  ["تاریکی", "🌑", 35, "انفجار تاریک", "#bc80ff", "dark"]
+];
+
+const recipes = [
+  ["چوب‌دستی جادوگری", "🪄", {wood:5, herb:2}, "wand"],
+  ["کتاب جادوگری", "📕", {wood:2, herb:4, crystal:1}, "book"],
+  ["معجون مانا", "🧪", {herb:3, crystal:1}, "potion"],
+  ["معجون درمان", "❤️‍🩹", {herb:4}, "healingPotion"],
+  ["تبر چوبی", "🪓", {wood:3, stone:2}, "axe"],
+  ["کلنگ سنگی", "⛏️", {wood:2, stone:4}, "pickaxe"],
+  ["میز کرفتینگ", "🛠️", {wood:8, stone:4}, "workbench"],
+  ["کریستال جادویی", "🔮", {stone:3, herb:2}, "crystalOrb"],
+  ["زره برگ", "🍃", {herb:6, wood:2}, "armor"]
+];
+
+const objects = [];
+const keys = {};
+let particles = [];
+let facing = 0;
+let lastTime = 0;
+
+function random(n) {
+  const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+for (let y = -35; y <= 35; y++) {
+  for (let x = -35; x <= 35; x++) {
+    const r = random(x * 97 + y * 31);
+
+    if (r > 0.27) {
+      objects.push({
+        x: x * 58 + random(x + y + 1) * 28,
+        y: y * 58 + random(x - y + 2) * 28,
+        type: r > 0.86 ? "rock" : r > 0.75 ? "herb" : "tree",
+        taken: false,
+        id: objects.length
+      });
+    }
+  }
+}
+
+function save() {
+  try {
+    localStorage.setItem("livingWorldSave", JSON.stringify({
+      state: S,
+      inventory,
+      objects
+    }));
+  } catch(e) {}
+}
+
+function load() {
+  try {
+    const data = JSON.parse(localStorage.getItem("livingWorldSave"));
+
+    if (data) {
+      Object.assign(S, data.state || {});
+      Object.assign(inventory, data.inventory || {});
+
+      if (Array.isArray(data.objects) && data.objects.length) {
+        objects.splice(0, objects.length, ...data.objects);
+      }
+    }
+  } catch(e) {}
+}
+
+function rect(x, y, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(Math.round(x), Math.round(y), w, h);
+}
+
+function drawTree(x, y, n) {
+  rect(x - 4, y - 1, 9, 19, "#63452b");
+
+  const colors = ["#2b642d", "#347532", "#547f32"];
+
+  ctx.fillStyle = colors[n % 3];
+  ctx.beginPath();
+  ctx.arc(x, y - 9, 17, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(x - 9, y - 3, 11, 0, Math.PI * 2);
+  ctx.arc(x + 9, y - 3, 11, 0, Math.PI * 2);
+  ctx.fill();
+
+  rect(x - 7, y - 18, 7, 4, "#84b84b");
+  rect(x + 4, y - 9, 5, 3, "#91c44d");
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  rect(0, 0, W, H, "#3e7735");
+
+  const camX = W / 2 - S.x;
+  const camY = H / 2 - S.y;
+
+  for (let sy = -44; sy < H + 44; sy += 44) {
+    for (let sx = -44; sx < W + 44; sx += 44) {
+      const wx = Math.floor((sx - camX) / 44);
+      const wy = Math.floor((sy - camY) / 44);
+      const r = random(wx * 19 + wy * 73);
+
+      const color = r > 0.65 ? "#417b36" :
+                    r > 0.3 ? "#3d7433" : "#457d38";
+
+      rect(
+        sx + ((camX % 44) + 44) % 44,
+        sy + ((camY % 44) + 44) % 44,
+        43, 43, color
+      );
+
+      if (r > 0.78) {
+        rect(sx + 12, sy + 15, 4, 3, "#659546");
+        rect(sx + 28, sy + 30, 3, 4, "#598a3e");
+      }
+    }
+  }
+
+  const visible = objects
+    .filter(o => !o.taken &&
+      Math.abs(o.x - S.x) < W * 0.65 + 60 &&
+      Math.abs(o.y - S.y) < H * 0.65 + 60)
+    .sort((a, b) => a.y - b.y);
+
+  for (const o of visible) {
+    const x = o.x + camX;
+    const y = o.y + camY;
+
+    if (o.type === "tree") {
+      drawTree(x, y, o.id);
+    } else if (o.type === "rock") {
+      ctx.fillStyle = "#7e8986";
+      ctx.beginPath();
+      ctx.moveTo(x - 12, y + 7);
+      ctx.lineTo(x - 8, y - 8);
+      ctx.lineTo(x + 3, y - 13);
+      ctx.lineTo(x + 14, y + 1);
+      ctx.lineTo(x + 8, y + 9);
+      ctx.fill();
+
+      rect(x - 4, y - 7, 5, 3, "#b3bbb0");
+    } else {
+      rect(x - 3, y - 6, 6, 12, "#8dc845");
+      rect(x - 8, y - 10, 5, 5, "#e54d5d");
+      rect(x + 4, y - 13, 5, 5, "#e54d5d");
+    }
+  }
+
+  // خانه کوچک جنگلی
+  const hx = 430 + camX;
+  const hy = 360 + camY;
+
+  rect(hx - 26, hy - 4, 52, 32, "#785035");
+
+  ctx.fillStyle = "#ad7139";
+  ctx.beginPath();
+  ctx.moveTo(hx - 34, hy - 4);
+  ctx.lineTo(hx, hy - 31);
+  ctx.lineTo(hx + 34, hy - 4);
+  ctx.fill();
+
+  rect(hx + 7, hy + 5, 10, 13, "#ffdb65");
+
+  // جادوگر
+  const px = W / 2;
+  const py = H / 2;
+
+  ctx.fillStyle = "#20332299";
+  ctx.beginPath();
+  ctx.ellipse(px, py + 16, 13, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  rect(px - 8, py - 1, 16, 19, "#283c81");
+  rect(px - 7, py - 15, 14, 14, "#edc19a");
+  rect(px - 10, py - 19, 20, 6, "#34254e");
+
+  ctx.fillStyle = "#34254e";
+  ctx.beginPath();
+  ctx.moveTo(px - 13, py - 18);
+  ctx.lineTo(px + 2, py - 34);
+  ctx.lineTo(px + 14, py - 18);
+  ctx.fill();
+
+  rect(px - 5, py - 9, 3, 3, "#17141d");
+  rect(px + 3, py - 9, 3, 3, "#17141d");
+
+  ctx.strokeStyle = "#8b5b31";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(px + 10, py + 4);
+  ctx.lineTo(px + 22, py - 21);
+  ctx.stroke();
+
+  rect(px + 19, py - 27, 8, 8, "#a86bff");
+  rect(px + 21, py - 25, 3, 3, "#e8caff");
+
+  for (const p of particles) {
+    ctx.globalAlpha = Math.max(0, p.life);
+    rect(px + p.x, py + p.y, 5, 5, p.color);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function updateUI() {
+  for (const k of ["wood", "stone", "herb", "crystal"]) {
+    document.getElementById(k).textContent = S[k];
+  }
+
+  document.getElementById("hp").style.width = S.hp + "%";
+  document.getElementById("mana").style.width = S.mana + "%";
+  document.getElementById("hpText").textContent = Math.round(S.hp);
+  document.getElementById("manaText").textContent = Math.round(S.mana);
+  document.getElementById("xp").textContent = S.xp;
+  document.getElementById("level").textContent = S.level;
+  document.getElementById("day").textContent = S.day;
+
+  document.getElementById("time").textContent =
+    String(Math.floor(S.minutes / 60) % 24).padStart(2, "0") + ":" +
+    String(Math.floor(S.minutes % 60)).padStart(2, "0");
+}
+
+let toastTimer;
+
+function toast(message) {
+  const el = document.getElementById("toast");
+  el.textContent = message;
+  el.style.display = "block";
+
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.style.display = "none", 1700);
+}
+
+function showModal(html) {
+  document.getElementById("content").innerHTML = html;
+  document.getElementById("modal").style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+document.getElementById("close").onclick = closeModal;
+
+document.getElementById("modal").onclick = e => {
+  if (e.target.id === "modal") closeModal();
+};
+
+function openSpellBook() {
+  let html = "<h2>📖 کتاب جادوگری</h2>";
+  html += "<p>جادو را انتخاب کن. جادوهای قفل‌شده با ساخت کتاب و کریستال باز می‌شوند.</p>";
+  html += '<div class="grid">';
+
+  spells.forEach((s, i) => {
+    html += `
+      <div class="card">
+        <b>${S.unlocked[i] ? s[1] : "🔒"}</b>
+        <strong>${s[0]}</strong>
+        <small>مانا: ${s[2]}<br>${s[3]}</small>
+        <button ${S.unlocked[i] ? "" : "disabled"}
+          onclick="window.selectSpell(${i})">
+          ${S.selected === i ? "انتخاب شده" : "انتخاب"}
+        </button>
+      </div>`;
+  });
+
+  showModal(html + "</div>");
+}
+
+window.selectSpell = i => {
+  S.selected = i;
+  closeModal();
+  toast("جادوی " + spells[i][0] + " انتخاب شد");
+  save();
+};
+
+function openCrafting() {
+  let html = "<h2>⚒️ کرفتینگ</h2>";
+  html += "<p>منابع را با دکمه دست جمع‌آوری کن.</p>";
+  html += '<div class="grid">';
+
+  recipes.forEach((r, i) => {
+    const canCraft = Object.entries(r[2])
+      .every(([k, v]) => S[k] >= v);
+
+    const costs = Object.entries(r[2])
+      .map(([k, v]) => ({
+        wood: "🪵",
+        stone: "🪨",
+        herb: "🌿",
+        crystal: "💎"
+      }[k]) + " " + v)
+      .join(" + ");
+
+    html += `
+      <div class="card">
+        <b>${r[1]}</b>
+        <strong>${r[0]}</strong>
+        <small>${costs}</small>
+        <button ${canCraft ? "" : "disabled"}
+          onclick="window.craftItem(${i})">ساختن</button>
+      </div>`;
+  });
+
+  showModal(html + "</div>");
+}
+
+window.craftItem = i => {
+  const r = recipes[i];
+
+  if (!Object.entries(r[2]).every(([k, v]) => S[k] >= v)) {
+    toast("منابع کافی نیست!");
+    return;
+  }
+
+  Object.entries(r[2]).forEach(([k, v]) => S[k] -= v);
+
+  inventory[r[3]] = (inventory[r[3]] || 0) + 1;
+
+  if (r[3] === "potion") {
+    S.mana = Math.min(100, S.mana + 45);
+    inventory.potion--;
+  }
+
+  if (r[3] === "healingPotion") {
+    S.hp = Math.min(100, S.hp + 40);
+    inventory.healingPotion--;
+  }
+
+  if (r[3] === "book" || r[3] === "crystalOrb") {
+    const next = S.unlocked.indexOf(false);
+
+    if (next >= 0) {
+      S.unlocked[next] = true;
+      toast("جادوی تازه باز شد: " + spells[next][0]);
+    } else {
+      toast("وسیله ساخته شد!");
+    }
+  } else {
+    toast(r[0] + " ساخته شد!");
+  }
+
+  S.xp += 10;
+
+  if (S.xp >= 50 * S.level) {
+    S.xp = 0;
+    S.level++;
+    S.hp = 100;
+    toast("سطح جدید: " + S.level);
+  }
+
+  updateUI();
+  save();
+  openCrafting();
+};
+
+function gather() {
+  let best = null;
+  let distance = 68;
+
+  for (const o of objects) {
+    if (o.taken) continue;
+
+    const d = Math.hypot(o.x - S.x, o.y - S.y);
+
+    if (d < distance) {
+      best = o;
+      distance = d;
+    }
+  }
+
+  if (!best) {
+    toast("به درخت، سنگ یا گیاه نزدیک شو!");
+    return;
+  }
+
+  best.taken = true;
+
+  if (best.type === "tree") {
+    S.wood += inventory.axe ? 4 : 2;
+    toast("🪵 چوب جمع کردی!");
+  } else if (best.type === "rock") {
+    S.stone += inventory.pickaxe ? 4 : 2;
+    toast("🪨 سنگ جمع کردی!");
+  } else {
+    S.herb += 2;
+    if (Math.random() > 0.75) S.crystal++;
+    toast("🌿 گیاه جمع کردی!");
+  }
+
+  S.xp += 2;
+  updateUI();
+  save();
+}
+
+function castSpell() {
+  const s = spells[S.selected];
+
+  if (!S.unlocked[S.selected]) {
+    toast("این جادو قفل است!");
+    return;
+  }
+
+  if (S.mana < s[2]) {
+    toast("مانای کافی نداری!");
+    return;
+  }
+
+  S.mana -= s[2];
+
+  if (s[5] === "heal") {
+    S.hp = Math.min(100, S.hp + 35);
+    toast("💚 جان بازیابی شد!");
+  } else if (s[5] === "teleport") {
+    S.x += Math.sin(facing) * 120;
+    S.y -= Math.cos(facing) * 120;
+    toast("تلپورت!");
+  } else {
+    toast(s[1] + " جادوی " + s[0] + " اجرا شد!");
+  }
+
+  for (let i = 0; i < 16; i++) {
+    particles.push({
+      x: Math.random() * 80 - 40,
+      y: Math.random() * 60 - 30,
+      color: s[4],
+      life: 1
+    });
+  }
+
+  updateUI();
+  save();
+}
+
+document.getElementById("book").onclick = openSpellBook;
+document.getElementById("craft").onclick = openCrafting;
+document.getElementById("gather").onclick = gather;
+document.getElementById("cast").onclick = castSpell;
+document.getElementById("slotWand").onclick = openSpellBook;
+document.getElementById("slotBook").onclick = openSpellBook;
+
+document.getElementById("slotPotion").onclick = () => {
+  if (inventory.potion > 0) {
+    S.mana = Math.min(100, S.mana + 45);
+    inventory.potion--;
+    updateUI();
+    save();
+    toast("معجون مانا استفاده شد!");
+  } else {
+    toast("اول معجون مانا بساز!");
+  }
+};
+
+const directions = {
+  up: [0, -1],
+  down: [0, 1],
+  left: [-1, 0],
+  right: [1, 0]
+};
+
+for (const id in directions) {
+  const el = document.getElementById(id);
+
+  el.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    keys[id] = true;
+    el.setPointerCapture(e.pointerId);
+  });
+
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach(event => {
+    el.addEventListener(event, () => keys[id] = false);
+  });
+}
+
+addEventListener("keydown", e => {
+  const map = {
+    ArrowUp: "up", w: "up",
+    ArrowDown: "down", s: "down",
+    ArrowLeft: "left", a: "left",
+    ArrowRight: "right", d: "right"
+  };
+
+  if (map[e.key]) keys[map[e.key]] = true;
+  if (e.key === "e") gather();
+  if (e.key === " ") castSpell();
+});
+
+addEventListener("keyup", e => {
+  const map = {
+    ArrowUp: "up", w: "up",
+    ArrowDown: "down", s: "down",
+    ArrowLeft: "left", a: "left",
+    ArrowRight: "right", d: "right"
+  };
+
+  if (map[e.key]) keys[map[e.key]] = false;
+});
+
+function gameLoop(time) {
+  const dt = Math.min((time - lastTime) / 1000 || 0, 0.04);
+  lastTime = time;
+
+  const speed = 165 * dt;
+
+  if (keys.up) {
+    S.y -= speed;
+    facing = 0;
+  }
+
+  if (keys.down) {
+    S.y += speed;
+    facing = Math.PI;
+  }
+
+  if (keys.left) {
+    S.x -= speed;
+    facing = -Math.PI / 2;
+  }
+
+  if (keys.right) {
+    S.x += speed;
+    facing = Math.PI / 2;
+  }
+
+  S.minutes += dt * 2;
+
+  if (S.minutes >= 1440) {
+    S.minutes = 0;
+    S.day++;
+  }
+
+  S.mana = Math.min(100, S.mana + dt * 0.65);
+
+  particles = particles.filter(p => p.life > 0);
+  particles.forEach(p => p.life -= dt);
+
+  draw();
+  updateUI();
+
+  requestAnimationFrame(gameLoop);
+}
+
+load();
+updateUI();
+requestAnimationFrame(gameLoop);
+
+setInterval(save, 10000);
+</script>
+</body>
+</html>
